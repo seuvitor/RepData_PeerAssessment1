@@ -5,7 +5,8 @@ output:
     keep_md: true
 ---
 
-```{r message=FALSE}
+
+```r
 # Loading required libraries for this study
 library(dplyr)
 library(ggplot2)
@@ -14,7 +15,8 @@ library(ggplot2)
 
 ## Loading and preprocessing the data
 
-```{r}
+
+```r
 # This script assumes that activity.zip is available in the current directory
 unzip("activity.zip")
 
@@ -30,7 +32,8 @@ activityData <- tbl_df(read.csv("activity.csv", header = TRUE)) %>%
 
 First we calculate the total number of steps taken per day.
 
-```{r}
+
+```r
 # Summarize total of steps by day
 totalStepsByDay <- activityData %>%
     group_by(day) %>%
@@ -39,7 +42,8 @@ totalStepsByDay <- activityData %>%
 
 Then we make a histogram of the total number of steps taken each day.
 
-```{r}
+
+```r
 ggplot(totalStepsByDay, aes(total_steps)) +
     geom_histogram(na.rm = TRUE, bins = 5, color = "black", fill = "white") +
     labs(title = "Histogram of total steps per day",
@@ -47,23 +51,27 @@ ggplot(totalStepsByDay, aes(total_steps)) +
          y = "Number of days")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+
 Next we calculate and report the mean and median.
 
-```{r}
+
+```r
 meanStepsPerDay <- mean(totalStepsByDay$total_steps, na.rm = TRUE)
 medianStepsPerDay <- median(totalStepsByDay$total_steps, na.rm = TRUE)
 ```
 
 Ignoring missing values, the mean of the total number of steps taken per day was
-**`r format(meanStepsPerDay, digits = 2, nsmall = 2)`** while the median was
-**`r medianStepsPerDay`**.
+**10766.19** while the median was
+**10765**.
 
 
 ## What is the average daily activity pattern?
 
 We summarize the data by the 5-minute interval.
 
-```{r}
+
+```r
 # Summarize total of steps by the interval
 meanStepsByInterval <- activityData %>%
     group_by(interval) %>%
@@ -71,13 +79,12 @@ meanStepsByInterval <- activityData %>%
     mutate(interval_time =
                as.POSIXct(strptime(sprintf("%04d", interval),
                                    format = "%H%M")))
-
-
 ```
 
 Then we make a time series plot of the average number of steps taken on each 5-minute interval.
 
-```{r}
+
+```r
 ggplot(meanStepsByInterval, aes(interval_time, mean_steps)) +
     geom_line(na.rm = TRUE) +
     scale_x_datetime(date_labels = "%H:%M") +
@@ -86,15 +93,18 @@ ggplot(meanStepsByInterval, aes(interval_time, mean_steps)) +
          y = "Mean number of steps")
 ```
 
-```{r}
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
+
+
+```r
 mostActiveInterval <- filter(meanStepsByInterval, mean_steps == max(mean_steps))
 stepsInMostActiveInterval <- mostActiveInterval$mean_steps
 mostActiveTime <- format.Date(mostActiveInterval$interval_time, "%H:%M")
 ```
 
 On average across all days in the dataset, the most active 5-minute interval is
-the one that starts at **`r mostActiveTime`**, with an average of
-**`r format(stepsInMostActiveInterval, digits = 2, nsmall = 2)`** steps taken.
+the one that starts at **08:35**, with an average of
+**206.17** steps taken.
 
 
 ## Imputing missing values
