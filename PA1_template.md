@@ -109,6 +109,75 @@ the one that starts at **08:35**, with an average of
 
 ## Imputing missing values
 
+Calculate the number of missing values in the dataset.
 
+
+```r
+rowsWithNA <- sum(!complete.cases(activityData))
+missingSteps <- sum(is.na(activityData$steps))
+missingDate <- sum(is.na(activityData$date))
+missingInterval <- sum(is.na(activityData$interval))
+```
+
+We see that there are **2304** rows with missing values. In particular,
+we have 2304 missing values on the steps variable, 0
+missing from date and 0 missing from interval.
+
+We create a new dataset in which we replace those missing values for the mean
+steps (across all days) taken on the corresponding 5-minute interval.
+
+
+```r
+# Function that returns steps if not missing, or else the mean for the interval
+getMeanStepsForIntervalIfMissing <- function(steps, interval) {
+    if (is.na(steps)) {
+        meanStepsByInterval[meanStepsByInterval$interval == interval, ]$mean_steps
+    } else {
+        steps
+    }
+}
+
+# Replaces missing data on a new dataset using the function defined above
+activityDataImputed <- activityData %>%
+    mutate(steps = mapply(getMeanStepsForIntervalIfMissing,
+                          activityData$steps,
+                          activityData$interval))
+
+totalStepsByDayImputed <- activityDataImputed %>%
+    group_by(day) %>%
+    summarize(total_steps = sum(steps))
+```
+
+Now we compare with the original dataset to assess the impact. First, comparing
+the histogram of the total number of steps taken each day.
+
+
+```r
+ggplot(totalStepsByDayImputed, aes(total_steps)) +
+    geom_histogram(na.rm = TRUE, bins = 5, color = "black", fill = "white") +
+    labs(title = "Histogram of total steps per day with the imputed dataset",
+         x = "Total number of steps",
+         y = "Number of days")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
+
+Now for the mean and median.
+
+
+```r
+meanStepsPerDayImputed <- mean(totalStepsByDayImputed$total_steps, na.rm = TRUE)
+medianStepsPerDayImputed <- median(totalStepsByDayImputed$total_steps, na.rm = TRUE)
+```
+
+With imputed data, the mean of the total number of steps taken per day changed
+from **10766.19** to
+**10766.19** while the median
+changed from **10765** to
+**10766.19**.
+
+In conclusion, the impact of imputing missing data was really small.
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+
