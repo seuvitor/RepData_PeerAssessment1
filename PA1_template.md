@@ -34,7 +34,7 @@ First we calculate the total number of steps taken per day.
 # Summarize total of steps by day
 totalStepsByDay <- activityData %>%
     group_by(day) %>%
-    summarize(total_steps = sum(steps))
+    summarize(total_steps = sum(steps, na.rm = TRUE))
 ```
 
 Then we make a histogram of the total number of steps taken each day.
@@ -59,8 +59,8 @@ medianStepsPerDay <- median(totalStepsByDay$total_steps, na.rm = TRUE)
 ```
 
 Ignoring missing values, the **mean** of the total number of steps taken per day
-was **10766.19** while the **median**
-was **10765**.
+was **9354.23** while the **median**
+was **10395**.
 
 
 ## What is the average daily activity pattern?
@@ -142,7 +142,7 @@ activityDataImputed <- activityData %>%
 
 totalStepsByDayImputed <- activityDataImputed %>%
     group_by(day) %>%
-    summarize(total_steps = sum(steps))
+    summarize(total_steps = sum(steps, na.rm = TRUE))
 ```
 
 Now we compare with the original dataset to assess the impact. First, comparing
@@ -168,12 +168,14 @@ medianStepsPerDayImputed <- median(totalStepsByDayImputed$total_steps, na.rm = T
 ```
 
 With imputed data, the mean of the total number of steps taken per day changed
-from **10766.19** to
+from **9354.23** to
 **10766.19** while the median
-changed from **10765** to
+changed from **10395** to
 **10766.19**.
 
-In conclusion, the impact of imputing missing data was really small.
+We see that the impact of imputing missing data is relatively strong, but we are
+confident with the strategy and will proceed with the analysis with imputed
+data.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
