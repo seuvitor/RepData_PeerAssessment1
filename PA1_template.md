@@ -21,10 +21,7 @@ library(ggplot2)
 unzip("activity.zip")
 
 activityData <- tbl_df(read.csv("activity.csv", header = TRUE)) %>%
-    mutate(time_interval =
-               as.POSIXct(strptime(paste(date, sprintf("%04d", interval)),
-                                   format = "%Y-%m-%d %H%M")),
-           day = as.Date(date))
+    mutate(day = as.Date(date))
 ```
 
 
@@ -61,9 +58,9 @@ meanStepsPerDay <- mean(totalStepsByDay$total_steps, na.rm = TRUE)
 medianStepsPerDay <- median(totalStepsByDay$total_steps, na.rm = TRUE)
 ```
 
-Ignoring missing values, the mean of the total number of steps taken per day was
-**10766.19** while the median was
-**10765**.
+Ignoring missing values, the **mean** of the total number of steps taken per day
+was **10766.19** while the **median**
+was **10765**.
 
 
 ## What is the average daily activity pattern?
@@ -102,8 +99,8 @@ stepsInMostActiveInterval <- mostActiveInterval$mean_steps
 mostActiveTime <- format.Date(mostActiveInterval$interval_time, "%H:%M")
 ```
 
-On average across all days in the dataset, the most active 5-minute interval is
-the one that starts at **08:35**, with an average of
+On average across all days in the dataset, the **most active 5-minute interval**
+is the one that starts at **08:35**, with an average of
 **206.17** steps taken.
 
 
@@ -123,8 +120,8 @@ We see that there are **2304** rows with missing values. In particular,
 we have 2304 missing values on the steps variable, 0
 missing from date and 0 missing from interval.
 
-We create a new dataset in which we replace those missing values for the mean
-steps (across all days) taken on the corresponding 5-minute interval.
+We create a new dataset in which we **replace those missing values for the mean
+steps (across all days) taken on the corresponding 5-minute interval**.
 
 
 ```r
@@ -180,4 +177,50 @@ In conclusion, the impact of imputing missing data was really small.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
+We create a new factor variable day_type with the values "weekday" or "weekend"
+to analyse changes in activity levels in the weekend.
 
+
+
+```r
+# Function to return type of the day
+dayType <- function(day) {
+    if (weekdays(day) %in% c("Saturday", "Sunday")) {
+        "weekend"
+    } else {
+        "weekday"
+    }
+}
+
+# Create new variable using the function defined above
+activityDataImputed <- activityDataImputed %>%
+    mutate(day_type = as.factor(sapply(day, dayType)))
+```
+
+We then make a time series plot comparing the average number of steps taken on
+each 5-minute interval, on weekdays and on weekends.
+
+
+```r
+# Summarize total of steps by the interval, grouped by day_type
+meanStepsByIntervalImputed <- activityDataImputed %>%
+    group_by(interval, day_type) %>%
+    summarize(mean_steps = mean(steps, na.rm = TRUE)) %>%
+    mutate(interval_time =
+               as.POSIXct(strptime(sprintf("%04d", interval),
+                                   format = "%H%M")))
+
+ggplot(meanStepsByIntervalImputed, aes(interval_time, mean_steps)) +
+    geom_line(na.rm = TRUE) +
+    facet_grid(. ~ day_type) +
+    scale_x_datetime(date_labels = "%H:%M") +
+    labs(title = "Comparison of daily activity pattern on weekdays vs weekends",
+         x = "Time of the day",
+         y = "Mean number of steps")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-14-1.png)<!-- -->
+
+When we split the data in weekdays vs weekends, we can see that there are
+different patterns of daily activity, namely we can se more activity in the
+morning on weekdays and more activity in the evening on weekends.
